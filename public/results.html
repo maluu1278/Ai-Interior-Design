@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>AI Result | AI Interior Design</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+
+    import { initializeApp }
+      from "firebase/app";
+
+    import {
+      getAuth,
+      signOut,
+      onAuthStateChanged
+    } from "firebase/auth";
+
+    import {
+      getFirestore
+    } from "firebase/firestore";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY7Nz58moCn9I9hx36Q2b32WBJJkXWPCU",
+      authDomain: "ai-interior-design-11623.firebaseapp.com",
+      projectId: "ai-interior-design-11623",
+      storageBucket: "ai-interior-design-11623.firebasestorage.app",
+      messagingSenderId: "457076741834",
+      appId: "1:457076741834:web:0350111e3a895464500633"
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const db = getFirestore(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.firebaseSignOut = signOut;
+
+    // Sync token with localStorage
+    onAuthStateChanged(auth, async (user) => {
+
+      if (user) {
+
+        const token =
+          await user.getIdToken();
+
+        if (
+          localStorage.getItem("authToken") !== token
+        ) {
+
+          localStorage.setItem(
+            "authToken",
+            token
+          );
+
+        }
+
+      } else {
+
+        const isAuthPage =
+          window.location.pathname.includes("login") ||
+          window.location.pathname.includes("signup");
+
+        if (!isAuthPage) {
+
+          localStorage.removeItem("authToken");
+
+          localStorage.removeItem("currentUser");
+
+        }
+
+      }
+
+    });
+
+  </script>
+
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+
+    <div class="container nav-inner">
+
+      <a class="logo" href="index.html">
+        AI Interior<span>.</span>
+      </a>
+
+      <ul class="nav-links">
+
+        <li><a href="index.html">Home</a></li>
+
+        <li><a href="generate.html">Generate</a></li>
+
+        <li><a href="gallery.html">Gallery</a></li>
+
+        <li><a href="dashboard.html">Dashboard</a></li>
+
+        <li><a href="subscribe.html">Plans</a></li>
+
+        <li><a href="login.html">Login</a></li>
+
+        <li>
+          <a class="btn-nav" href="signup.html">
+            Sign Up
+          </a>
+        </li>
+
+      </ul>
+
+      <button
+        class="menu-toggle"
+        onclick="toggleMenu()"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+
+    </div>
+
+  </nav>
+
+  <!-- Main Result Section -->
+  <main class="result-shell">
+
+    <div class="container">
+
+      <!-- Header -->
+      <header class="page-head">
+
+        <div class="eyebrow">
+          <i class="fas fa-check-circle"></i>
+          Result ready
+        </div>
+
+        <h1>Your AI Design Result</h1>
+
+        <p>
+          Review the generated design,
+          review the generated design, edit it,
+          then download or regenerate.
+        </p>
+
+      </header>
+
+      <!-- Loading -->
+      <section
+        class="loading-card"
+        id="loadingScreen"
+      >
+
+        <div class="loader"></div>
+
+        <h2>Preparing your result...</h2>
+
+        <p>
+          Finalizing image and design summary.
+        </p>
+
+        <div class="progress">
+          <span></span>
+        </div>
+
+      </section>
+
+      <!-- Results -->
+      <section
+        id="resultsContent"
+        class="hidden"
+      >
+
+        <div
+          id="demoWarning"
+          class="demo-warning hidden"
+        ></div>
+
+        <!-- Result Card -->
+        <article class="result-card">
+
+          <!-- Top -->
+          <div class="result-top">
+
+            <div>
+
+              <span class="badge">
+                <i class="fas fa-check-circle"></i>
+                Design Generated Successfully
+              </span>
+
+              <h2
+                id="resultTitle"
+                style="margin-top:12px;"
+              >
+                Generated Room Design
+              </h2>
+
+              <p>
+                Generated on
+                <span id="resultDate"></span>
+                · Provider:
+                <strong id="providerName">-</strong>
+              </p>
+
+            </div>
+
+            <div
+              style="
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+
+              <button
+                class="btn btn-soft"
+                onclick="shareResult()"
+              >
+                <i class="fas fa-share-alt"></i>
+                Share
+              </button>
+
+              <button
+                class="btn btn-soft"
+                onclick="copyPrompt()"
+              >
+                <i class="fas fa-copy"></i>
+                Copy Prompt
+              </button>
+
+              <button
+                class="btn btn-primary"
+                onclick="downloadResult()"
+              >
+                <i class="fas fa-download"></i>
+                Download
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- Images -->
+          <div class="result-images">
+
+            <div class="image-panel">
+
+              <img
+                id="beforeImage"
+                src="images/jason-wang-NxAwryAbtIw-unsplash.jpg"
+                alt="Before room"
+              />
+
+              <span class="image-label">
+                Before
+              </span>
+
+            </div>
+
+            <div class="image-panel generated">
+
+              <img
+                id="resultImage"
+                src="images/spacejoy-9M66C_w_ToM-unsplash.jpg"
+                alt="AI generated design"
+              />
+
+              <span class="image-label">
+                <i class="fas fa-magic"></i>
+                AI Generated
+              </span>
+
+            </div>
+
+          </div>
+
+          <!-- Recommendations Space -->
+          <div class="recommendations-space">
+
+            <div>
+              <h3>Design Recommendations</h3>
+              <p>
+                Use this space to refresh styling recommendations for the generated room.
+              </p>
+              <ul id="recommendationsList">
+                <li>Add layered lighting for a warmer and more realistic result.</li>
+                <li>Keep the furniture layout practical with clear walking space.</li>
+                <li>Repeat the main colour in decor pieces to connect the room.</li>
+              </ul>
+            </div>
+
+            <button
+              class="btn btn-primary"
+              onclick="refreshRecommendations()"
+            >
+              <i class="fas fa-sync-alt"></i>
+              Refresh Recommendations
+            </button>
+
+          </div>
+
+          <!-- Summary -->
+          <div class="summary">
+
+            <div class="summary-item">
+              <div class="label">Style</div>
+              <div class="value" id="sumStyle">-</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="label">Colour</div>
+              <div class="value" id="sumColor">-</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="label">Shape</div>
+              <div class="value" id="sumShape">-</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="label">Budget</div>
+              <div class="value" id="sumBudget">-</div>
+            </div>
+
+            <div class="summary-item">
+              <div class="label">Room Size</div>
+              <div class="value" id="sumDimensions">-</div>
+            </div>
+
+          </div>
+
+        </article>
+
+        <!-- Action Buttons -->
+        <div class="actions-grid">
+
+          <button
+            class="btn btn-primary"
+            onclick="generateAnotherVersion()"
+          >
+            <i class="fas fa-redo"></i>
+            Generate Another Version
+          </button>
+
+          <a
+            class="btn btn-soft"
+            href="dashboard.html"
+          >
+            <i class="fas fa-folder"></i>
+            View Dashboard
+          </a>
+
+          <a
+            class="btn btn-soft"
+            href="gallery.html"
+          >
+            <i class="fas fa-images"></i>
+            Browse Gallery
+          </a>
+
+          <button
+            class="btn btn-primary"
+            onclick="openEditPage()"
+          >
+            <i class="fas fa-pen-to-square"></i>
+            Edit
+          </button>
+
+        </div>
+
+        <!-- Prompt Panel -->
+        <section class="panel prompt-panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <h2>AI Prompt Used</h2>
+
+              <p>
+                This helps show the full generation
+                workflow during project discussion.
+              </p>
+
+            </div>
+
+            <button
+              class="btn btn-soft"
+              onclick="copyPrompt()"
+            >
+              <i class="fas fa-copy"></i>
+              Copy
+            </button>
+
+          </div>
+
+          <pre id="promptOutput">-</pre>
+
+        </section>
+
+        <!-- Design Details -->
+        <section class="panel">
+
+          <h2>Design Details</h2>
+
+          <p
+            style="
+              color:var(--muted);
+              margin-bottom:18px;
+            "
+          >
+            Breakdown of your selected
+            design parameters.
+          </p>
+
+          <div class="details-grid">
+
+            <div class="detail">
+              <i class="fas fa-couch"></i>
+
+              <div>
+                <strong>Room Type</strong>
+                <p id="detRoom">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-paint-brush"></i>
+
+              <div>
+                <strong>Interior Style</strong>
+                <p id="detStyle">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-palette"></i>
+
+              <div>
+                <strong>Colour Scheme</strong>
+                <p id="detColor">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-shapes"></i>
+
+              <div>
+                <strong>Furniture Shape</strong>
+                <p id="detShape">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-coins"></i>
+
+              <div>
+                <strong>Estimated Budget</strong>
+                <p id="detBudget">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-ruler-combined"></i>
+
+              <div>
+                <strong>Room Dimensions</strong>
+                <p id="detDimensions">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-lightbulb"></i>
+
+              <div>
+                <strong>Mood</strong>
+                <p id="detMood">-</p>
+              </div>
+            </div>
+
+            <div class="detail">
+              <i class="fas fa-list"></i>
+
+              <div>
+                <strong>Requirements</strong>
+                <p id="detInfo">-</p>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 AI Interior Design.</p>
+  </footer>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dashboard | AI Interior Design</title>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+    import { getFirestore } from "firebase/firestore";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY7Nz58moCn9I9hx36Q2b32WBJJkXWPCU",
+      authDomain: "ai-interior-design-11623.firebaseapp.com",
+      projectId: "ai-interior-design-11623",
+      storageBucket: "ai-interior-design-11623.firebasestorage.app",
+      messagingSenderId: "457076741834",
+      appId: "1:457076741834:web:0350111e3a895464500633"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.firebaseSignOut = signOut;
+
+    // Sync token with localStorage
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+
+        if (localStorage.getItem("authToken") !== token) {
+          localStorage.setItem("authToken", token);
+        }
+      } else {
+        const isAuthPage =
+          window.location.pathname.includes("login") ||
+          window.location.pathname.includes("signup");
+
+        if (!isAuthPage) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("currentUser");
+        }
+      }
+    });
+  </script>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="container nav-inner">
+
+      <a class="logo" href="index.html">
+        AI Interior<span>.</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="generate.html">Generate</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="subscribe.html">Plans</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a class="btn-nav" href="signup.html">Sign Up</a></li>
+      </ul>
+
+      <button class="menu-toggle" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+      </button>
+
+    </div>
+  </nav>
+
+  <section class="section">
+    <div class="container">
+
+      <h1 class="section-title">Saved Design Dashboard</h1>
+
+      <p class="section-subtitle">
+        Your recent generated designs are loaded from the backend database when logged in,
+        with browser history as guest fallback.
+      </p>
+
+      <div class="dashboard-stats">
+
+        <div>
+          <strong id="totalDesigns">0</strong>
+          <span>Total designs</span>
+        </div>
+
+        <div>
+          <strong id="latestDesign">-</strong>
+          <span>Latest generation</span>
+        </div>
+
+        <div>
+          <strong id="providerCount">0</strong>
+          <span>AI providers used</span>
+        </div>
+
+        <div>
+          <strong id="dashboardMode">-</strong>
+          <span>Storage mode</span>
+        </div>
+
+      </div>
+
+      <div class="dashboard-toolbar">
+
+        <input
+          id="historySearch"
+          type="search"
+          placeholder="Search by room, style, colour, or provider"
+        />
+
+        <select id="styleFilter">
+          <option value="">All styles</option>
+        </select>
+
+        <a class="btn btn-primary" href="generate.html">
+          <i class="fas fa-plus"></i> New Design
+        </a>
+
+        <button class="btn btn-soft" onclick="clearHistory()">
+          <i class="fas fa-trash"></i> Clear Browser History
+        </button>
+
+        <button
+          id="themeToggle"
+          class="btn btn-soft"
+          onclick="toggleTheme()">
+        </button>
+
+      </div>
+
+      <div class="cards dashboard-grid" id="historyGrid"></div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2026 AI Interior Design.</p>
+  </footer>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

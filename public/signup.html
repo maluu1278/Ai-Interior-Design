@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Sign Up | AI Interior Design</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+
+    import {
+      initializeApp
+    } from "firebase/app";
+
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      updateProfile
+    } from "firebase/auth";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY7Nz58moCn9I9hx36Q2b32WBJJkXWPCU",
+      authDomain: "ai-interior-design-11623.firebaseapp.com",
+      projectId: "ai-interior-design-11623",
+      storageBucket: "ai-interior-design-11623.firebasestorage.app",
+      messagingSenderId: "457076741834",
+      appId: "1:457076741834:web:0350111e3a895464500633"
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    window.firebaseAuth = auth;
+
+    window.createUserWithEmailAndPassword =
+      createUserWithEmailAndPassword;
+
+    window.updateProfile = updateProfile;
+
+  </script>
+
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+
+    <div class="container nav-inner">
+
+      <a class="logo" href="index.html">
+        AI Interior<span>.</span>
+      </a>
+
+      <ul class="nav-links">
+
+        <li><a href="index.html">Home</a></li>
+
+        <li><a href="generate.html">Generate</a></li>
+
+        <li><a href="gallery.html">Gallery</a></li>
+
+        <li><a href="dashboard.html">Dashboard</a></li>
+
+        <li><a href="subscribe.html">Plans</a></li>
+
+        <li><a href="login.html">Login</a></li>
+
+        <li>
+          <a
+            class="btn-nav"
+            href="signup.html"
+          >
+            Sign Up
+          </a>
+        </li>
+
+      </ul>
+
+      <button
+        class="menu-toggle"
+        onclick="toggleMenu()"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+
+    </div>
+
+  </nav>
+
+  <!-- Signup Section -->
+  <main class="auth-wrap">
+
+    <form
+      id="signupForm"
+      class="auth-card"
+    >
+
+      <div class="eyebrow dark">
+        <i class="fas fa-user-plus"></i>
+        Create Account
+      </div>
+
+      <h1>Sign Up</h1>
+
+      <p class="auth-subtitle">
+        Create your AI Interior Design account
+        and save your generated projects.
+      </p>
+
+      <div
+        id="authNote"
+        class="form-error hidden"
+      ></div>
+
+      <!-- Name -->
+      <div class="form-group">
+
+        <label>Full Name</label>
+
+        <input
+          type="text"
+          name="name"
+          required
+          placeholder="Your full name"
+        />
+
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+
+        <label>Email</label>
+
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="you@example.com"
+        />
+
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+
+        <label>Password</label>
+
+        <input
+          type="password"
+          name="password"
+          required
+          placeholder="Create password"
+        />
+
+      </div>
+
+      <!-- Submit -->
+      <button
+        class="btn btn-primary btn-block"
+        type="submit"
+      >
+        <i class="fas fa-user-plus"></i>
+        Create Account
+      </button>
+
+      <!-- Login Link -->
+      <p
+        style="
+          text-align:center;
+          margin-top:18px;
+          color:var(--muted);
+        "
+      >
+        Already have an account?
+
+        <a
+          href="login.html"
+          style="
+            color:var(--blue);
+            font-weight:800;
+          "
+        >
+          Login
+        </a>
+
+      </p>
+
+      <!-- Theme -->
+      <button
+        id="themeToggle"
+        type="button"
+        class="btn btn-soft btn-block"
+        onclick="toggleTheme()"
+      >
+        🌓 Theme
+      </button>
+
+    </form>
+
+  </main>
+
+  <!-- Signup Script -->
+  <script>
+
+    document
+      .getElementById("signupForm")
+      ?.addEventListener(
+        "submit",
+        async (e) => {
+
+          e.preventDefault();
+
+          const name =
+            document.querySelector('[name="name"]').value;
+
+          const email =
+            document.querySelector('[name="email"]').value;
+
+          const password =
+            document.querySelector('[name="password"]').value;
+
+          const note =
+            document.getElementById("authNote");
+
+          try {
+
+            const userCredential =
+              await window.createUserWithEmailAndPassword(
+                window.firebaseAuth,
+                email,
+                password
+              );
+
+            // Update profile name
+            await window.updateProfile(
+              userCredential.user,
+              {
+                displayName: name
+              }
+            );
+
+            // Get token
+            const token =
+              await userCredential.user.getIdToken();
+
+            // Save locally
+            localStorage.setItem(
+              "authToken",
+              token
+            );
+
+            localStorage.setItem(
+              "currentUser",
+              JSON.stringify({
+                uid: userCredential.user.uid,
+                name: name,
+                email: userCredential.user.email
+              })
+            );
+
+            showToast(
+              "Account created successfully!"
+            );
+
+            setTimeout(() => {
+              window.location.href =
+                "dashboard.html";
+            }, 700);
+
+          } catch (error) {
+
+            note.textContent =
+              error.message;
+
+            note.classList.remove("hidden");
+
+          }
+
+        }
+      );
+
+    // Toast Message
+    function showToast(msg) {
+
+      let toast =
+        document.getElementById("toast");
+
+      if (!toast) {
+
+        toast =
+          document.createElement("div");
+
+        toast.id = "toast";
+
+        document.body.appendChild(toast);
+
+      }
+
+      toast.textContent = msg;
+
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2600);
+
+    }
+
+  </script>
+
+  <script src="app.js"></script>
+
+</body>
+</html>

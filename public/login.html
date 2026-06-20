@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | AI Interior Design</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY7Nz58moCn9I9hx36Q2b32WBJJkXWPCU",
+      authDomain: "ai-interior-design-11623.firebaseapp.com",
+      projectId: "ai-interior-design-11623",
+      storageBucket: "ai-interior-design-11623.firebasestorage.app",
+      messagingSenderId: "457076741834",
+      appId: "1:457076741834:web:0350111e3a895464500633"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    window.firebaseAuth = auth;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+  </script>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a class="logo" href="index.html">AI Interior<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="generate.html">Generate</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="subscribe.html">Plans</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a class="btn-nav" href="signup.html">Sign Up</a></li>
+      </ul>
+      <button class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+  </nav>
+
+  <main class="auth-wrap">
+    <form id="loginForm" class="auth-card">
+      <div class="eyebrow dark"><i class="fas fa-lock"></i> Secure account</div>
+      <h1>Login</h1>
+      <p class="auth-subtitle">Access your saved designs, favourites, and dashboard history.</p>
+      <div id="authNote" class="form-error hidden"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input name="email" type="email" required placeholder="you@example.com" id="loginEmail" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input name="password" type="password" required placeholder="Your password" id="loginPassword" />
+      </div>
+      <button class="btn btn-primary btn-block" type="submit"><i class="fas fa-right-to-bracket"></i> Login</button>
+      <p style="text-align:center;margin-top:18px;color:var(--muted)">No account? <a href="signup.html" style="color:var(--blue);font-weight:800">Create one</a></p>
+      <button id="themeToggle" type="button" class="btn btn-soft btn-block" onclick="toggleTheme()">🌓 Theme</button>
+    </form>
+  </main>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const note = document.getElementById("authNote");
+      
+      try {
+        // Sign in with Firebase
+        const userCredential = await window.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+        const token = await userCredential.user.getIdToken();
+        const user = userCredential.user;
+        
+        // Save to localStorage
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("currentUser", JSON.stringify({
+          uid: user.uid,
+          name: user.displayName || email.split("@")[0],
+          email: user.email
+        }));
+        
+        console.log("Login successful!");
+        console.log("Token saved:", token.substring(0, 50) + "...");
+        console.log("User saved:", user.uid);
+        
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        note.textContent = error.message;
+        note.classList.remove("hidden");
+      }
+    });
+    
+    function toggleTheme() {
+      const next = (localStorage.getItem('theme') || 'light') === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+    }
+    
+    function toggleMenu() {
+      const links = document.querySelector('.nav-links');
+      if (links) links.classList.toggle('active');
+    }
+    
+    // Apply theme on load
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
